@@ -6,7 +6,7 @@ import ImageUploader from "../components/ImageUploader"
 import storage from '@react-native-firebase/storage'
 import firestore from '@react-native-firebase/firestore'
 
-const Register = ()=>{
+const Register = (props)=>{
 
     const [name,setName] = useState()
     const [password,setPassword] = useState()
@@ -24,35 +24,64 @@ const Register = ()=>{
     }
 
     const onSubmit = ()=>{
-        setLoading(true)
+        setLoading(true)        
         if(username && name && password && filename){
             
             firestore()
             .collection('Users')
             .doc(username)
-            .set({
-                Name: name,
-                Status: "User",
-                password:password,
-                pict:filename,
-                approved:0
-            })
-            .then(() => {
-                const reference = storage().ref(filename);
-
-                let task = reference.putFile(pict)
+            .get()
+            .then(documentSnapshot => {               
+                console.log("exist....",documentSnapshot.exists)
+                if (documentSnapshot.exists) {
+                    Alert.alert(
+                        'Registration Failed',
+                        'User Already Exist',
+                        [
+                          {
+                            text: 'Cancel',
+                            onPress: () =>setLoading(false),
+                            style: 'cancel',
+                          },
+                        ],
+                        {
+                          cancelable: true,
+                          onDismiss: () =>
+                            setLoading(false)
+                        }
+                      );
+                }
+                else{
+                    firestore()
+                    .collection('Users')
+                    .doc(username)
+                    .set({
+                        Name: name,
+                        Status: "User",
+                        password:password,
+                        pic:filename,
+                        approved:0,
+                        visitors:[]
+                    })
+                    .then(() => {
+                        const reference = storage().ref(filename);
         
-                task.on('state_changed', taskSnapshot => {
-                    console.log(`${taskSnapshot.bytesTransferred} transferred out of ${taskSnapshot.totalBytes}`);
-                });
-                    
-                task.then(() => {
-                console.log('Image uploaded to the bucket!');
-                console.log('User added!');
-                setLoading(false)
-                });    
+                        let task = reference.putFile(pict)
                 
-            });
+                        task.on('state_changed', taskSnapshot => {
+                            console.log(`${taskSnapshot.bytesTransferred} transferred out of ${taskSnapshot.totalBytes}`);
+                        });
+                            
+                        task.then(() => {
+                        console.log('Image uploaded to the bucket!');
+                        console.log('User added!');
+                        setLoading(false)
+                        props.navigation.navigate("Login")
+                        });    
+                        
+                    });
+                }
+            });           
         }
         else{
             Alert.alert(
@@ -75,7 +104,7 @@ const Register = ()=>{
     }
     
     return (
-        <View style={styles.container}>
+        <View >
             <TextPlace value={name} onChangeText={setName} placeholder="Enter Full Name"/>
             <TextPlace value={username} onChangeText={setUsername} placeholder="Enter Username"/>
             <TextPlace value={password} onChangeText={setPassword} placeholder="Enter Password"/>
@@ -86,7 +115,3 @@ const Register = ()=>{
 }
 
 export default Register
-
-const styles = StyleSheet.create({
-
-})

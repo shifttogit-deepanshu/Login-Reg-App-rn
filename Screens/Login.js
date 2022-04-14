@@ -11,6 +11,7 @@ const Login = (props)=>{
     const [foundStatus,setFoundStatus] = useState(0)
 
     const onLogin =()=>{
+        
 
         firestore()
         .collection('Users')
@@ -25,11 +26,11 @@ const Login = (props)=>{
                     found=1
                     console.log(documentSnapshot.data())
                     if( documentSnapshot.data().Status=="Admin"){
-                        props.navigation.navigate("Admin")
+                        props.navigation.navigate("Admin",{username,password})
                         
                     }
                     else{
-                        props.navigation.navigate("Users")
+                        props.navigation.navigate("Users",{username,password})
                         
                     }                   
                 }               
