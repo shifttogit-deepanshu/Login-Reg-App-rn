@@ -13,7 +13,6 @@ const AddVisit = (props)=>{
     const [pict,setPict] = useState()
     const [filename,setFilename] = useState()
     const [loading,setLoading] = useState(false)
-    const [visitors,setVisitors] = useState()
 
     const uploadPhoto = (pic)=>{
         const fileName = pic.substring(pic.lastIndexOf('/') + 1); + new Date().getTime()
@@ -40,7 +39,7 @@ const AddVisit = (props)=>{
             .collection('Users')
             .doc(props.route.params.username)
             .update({
-                visitors:[...visitors,{id:new Date().getTime(),name,vno,pict}]
+                visitors:[...visitors,{id:new Date().getTime(),name,vno,filename}]
             })
             .then(() => {
                 const reference = storage().ref(filename);
